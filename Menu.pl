@@ -61,7 +61,8 @@ while ($action != 0) {
     }
 
     if ($action == 3) {
-
+        my $name_prot = $dbh->prepare("select p.entry, names from proteins p join reactions r on p.entry = r.entry;");
+        $name_prot->execute();
 
     }
     print "1. Ajouter une protéine\n";
@@ -71,6 +72,7 @@ while ($action != 0) {
     print "5. Afficher prot selon Usr\n";
     print "6. Afficher caractéristiques protéines\n";
     $action = <STDIN>;
+
 }
 
 
