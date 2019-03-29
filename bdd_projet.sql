@@ -1,4 +1,4 @@
-drop table Reactions;
+/*drop table Reactions;
 drop table Genes;
 drop table Metadata;
 drop table Proteins;
@@ -29,4 +29,5 @@ create table Metadata(
     Status varchar(20) constraint reviewed_unreviewed check(Status in ('reviewed','unreviewed')),
     Organism varchar(50) constraint arath_only check(Organism='Arabidopsis thaliana (Mouse-ear cress)'),
     Entry_names varchar(50) constraint arath_end check(Entry_names LIKE '.%[_]ARATH')
-);
+);*/
+SELECT count(entry) from reactions;
