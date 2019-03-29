@@ -31,16 +31,6 @@ create table Metadata(
     Entry_names varchar(50) constraint arath_end check(Entry_names LIKE '.%[_]ARATH')
 );*/
 
-select count(entry)
-from proteins;
-
-select count(entry)
-from reactions;
-
-select names from proteins p join reactions r on p.entry = r.entry;
-
-select names from genes g join reactions r on g.entry = r.entry;
-
 select entry, names, length from proteins where length >= 4000;
 
 select * from proteins where names SIMILAR TO '%EC 4.1.1.-%';

@@ -21,7 +21,6 @@ $dbh->do("CREATE TABLE Reactions(
     Entry VARCHAR(10) CONSTRAINT clef_reactions PRIMARY KEY REFERENCES Proteins(Entry),
     Transcript_ID VARCHAR(20) CONSTRAINT error_transcript CHECK(Transcript_ID SIMILAR TO 'AT[0-9]G[0-9]+.[0-9]'),
     Plant_Reaction VARCHAR(20) CONSTRAINT error_reaction CHECK(Plant_Reaction SIMILAR TO 'R-ATH-[0-9]+' OR NULL)
-
 );");
 
 $dbh->do("CREATE TABLE Genes(
@@ -51,6 +50,9 @@ while (my $line = <$file>) {
     my @tab = split(/\t/, $line);
     if ($tab[5] eq "Arabidopsis thaliana (Mouse-ear cress)") {
         $protein_insert->execute($tab[0], $tab[3], $tab[10], $tab[6]);
+        if ($tab[4] eq "") {
+            $tab[4] = undef;
+        }
         $gene_insert->execute($tab[0], $tab[4], $tab[8], $tab[7]);
         $meta_data_insert->execute($tab[0], $tab[2], $tab[5], $tab[1]);
     }
@@ -67,10 +69,4 @@ while (my $line = <$file>) {
     my @tab = split(/,/, $line);
     $reactoins_insert->execute($tab[2], $tab[1], $tab[3])
 }
-
-# my $request = $dbh->prepare("select * from proteins where names SIMILAR TO ?;");
-# $request->execute("%EC 4.1.1.65%");
-# while (my @t = $request->fetchrow_array()) {
-#     print join(" ", @t), "\n";
-# }
 
