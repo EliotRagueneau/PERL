@@ -10,9 +10,9 @@ sub save {
     my $file_name = shift;
     my $title = shift;
     my @column_names = @_;
-    $file_name .= ".html";
+    $file_name = "Saves/" . $file_name . ".html";
     open(my $fh, '>', $file_name) || die "can't open file";
-    print $fh "<!DOCTYPE html>\n<head>\n<link rel='stylesheet' href='styles.css'>\n</head>\n<body>\n";
+    print $fh "<!DOCTYPE html>\n<head>\n<link rel='stylesheet' href='../styles.css'>\n</head>\n<body>\n";
     print $fh "<h1>$title</h1>\n";
     print $fh "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th>";
     print $fh join("</th>\n\t\t\t<th>", @column_names);
