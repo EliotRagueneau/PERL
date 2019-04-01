@@ -13,7 +13,7 @@ $dbh->do("DROP TABLE Proteins;");
 $dbh->do("CREATE TABLE Proteins(
     Entry VARCHAR(10) CONSTRAINT clef_proteines PRIMARY KEY,
     Names VARCHAR(800),
-    Sequence VARCHAR(100000) CONSTRAINT sequence_error CHECK(Sequence SIMILAR TO '[ACDEFGHIKLMNPQRSTVWY]*'),
+    Sequence VARCHAR(100000) CONSTRAINT sequence_error CHECK(Sequence SIMILAR TO '[A-IK-NP-TV-Z]*'),
     Length INT CONSTRAINT positive_length CHECK(Length>0)
 );");
 

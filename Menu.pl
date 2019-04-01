@@ -25,7 +25,6 @@ sub save {
     }
     print $fh "\t</tbody>\n</table>\n</body>";
     close($fh);
-
 }
 
 sub menu {
@@ -53,7 +52,7 @@ while ($action != 0) {
         my $sequence = <STDIN>;
         chomp $sequence;
         $sequence = uc $sequence;
-        while ($sequence =~ /[^AC-NP-TVWY]/) {
+        while ($sequence =~ /[^AC-IK-NP-TV-Z]/) {
             print("Séquence de la protéine invalide, veuillez la modifier.\n");
             $sequence = <STDIN>;
             chomp $sequence;
@@ -64,6 +63,7 @@ while ($action != 0) {
         $add_prot->execute($entry, $name, $sequence, $longueur);
         print("$entry, $name, $sequence, $longueur \n");
     }
+
     if ($action == 2) {
         print "Entrez l'entrée de la protéine à modifier.\n";
         my $entry = <STDIN>;
@@ -72,7 +72,7 @@ while ($action != 0) {
         my $sequence_alt = <STDIN>;
         chomp $sequence_alt;
         $sequence_alt = uc $sequence_alt;
-        while ($sequence_alt =~ /[^AC-NP-TVWY]/) {
+        while ($sequence_alt =~ /[^AC-IK-NP-TV-Z]/) {
             print("Séquence invalide, veuillez la modifier.\n");
             $sequence_alt = <STDIN>;
             chomp $sequence_alt;
@@ -84,7 +84,6 @@ while ($action != 0) {
         my $mod_seq = $dbh->prepare("UPDATE Proteins SET sequence = ?, length = ? where entry = ?;");
 
         $mod_seq->execute($sequence_alt, $longueur, $entry);
-
     }
 
     if ($action == 3) {
