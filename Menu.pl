@@ -47,20 +47,22 @@ sub save {
     my $title = shift;
     my @column_names = @_;
     $file_name = "Saves/" . $file_name . ".html";
+    $executed_querry->execute();
     open(my $fh, '>', $file_name) || die "can't open file";
-    print $fh "<!DOCTYPE html>\n<head>\n<link rel='stylesheet' href='../styles.css'>\n</head>\n<body>\n";
-    print $fh "<h1>$title</h1>\n";
-    print $fh "<table>\n\t<thead>\n\t\t<tr>\n\t\t\t<th>";
-    print $fh join("</th>\n\t\t\t<th>", @column_names);
-    print $fh "</th>\n\t\t</tr>\n\t</thead>\n\t<tbody>\n";
+    print $fh "<!DOCTYPE html>\n<head>\n\t<link rel='stylesheet' href='../styles.css'>\n</head>\n<body>\n";
+    print $fh "\t<h1>$title</h1>\n";
+    print $fh "\t<table>\n\t\t<thead>\n\t\t\t<tr>\n\t\t\t\t<th>";
+    print $fh join("</th>\n\t\t\t\t<th>", @column_names);
+    print $fh "</th>\n\t\t\t</tr>\n\t\t</thead>\n\t\t<tbody>\n";
     while (my @t = $executed_querry->fetchrow_array()) {
         for (@t) {$_ = 'N.A.' if !defined($_);}
-        print $fh "\t\t<tr>\n\t\t\t<td>";
-        print $fh join("</td>\n\t\t\t<td>", @t);
-        print $fh "</td>\n\t\t</tr>\n";
+        print $fh "\t\t\t<tr>\n\t\t\t\t<td>";
+        print $fh join("</td>\n\t\t\t\t<td>", @t);
+        print $fh "</td>\n\t\t\t</tr>\n";
     }
-    print $fh "\t</tbody>\n</table>\n</body>";
+    print $fh "\t\t</tbody>\n\t</table>\n</body>";
     close($fh);
+    print("Résultats sauvegardés\n")
 }
 
 menu;
@@ -83,7 +85,9 @@ while ($action != 0) {
 
         my $add_prot = $dbh->prepare("INSERT INTO Proteins VALUES (?, ?, ?, ?);");
         $add_prot->execute($entry, $name, $sequence, $longueur);
+
         print("$entry, $name, $sequence, $longueur \n");
+        $add_prot->finish();
     }
 
     if ($action == 2) {
@@ -97,10 +101,11 @@ while ($action != 0) {
         my $longueur = length($sequence);
 
         my $mod_seq = $dbh->prepare("UPDATE Proteins SET sequence = ?, length = ? where entry = ?;");
-        my $nb_modified = $mod_seq->execute($sequence, $longueur, $entry);
-        if ($nb_modified == 0) {
+
+        if ($mod_seq->execute($sequence, $longueur, $entry) == 0) {
             print("L'entrée donnée n'éxistant pas dans la base, nous n'avons pas pu modifier sa séquence\n");
         }
+        $mod_seq->finish();
     }
 
     if ($action == 3) {
@@ -111,10 +116,9 @@ while ($action != 0) {
 
         my $answer = save_yes_no();
         if ($answer eq "O") {
-            $name_prot->execute();
             save($name_prot, "linked_protein_names", "Proteins linked with EnsemblPlants", "Entry", "Protein name");
-            print("Résultats sauvegardés\n")
         }
+        $name_prot->finish();
     }
 
     if ($action == 4) {
@@ -125,10 +129,9 @@ while ($action != 0) {
 
         my $answer = save_yes_no();
         if ($answer eq "O") {
-            $name_gene->execute();
             save($name_gene, "linked_gene_names", "Genes linked with EnsemblPlants", "Entry", "Gene names");
-            print("Résultats sauvegardés\n")
         }
+        $name_gene->finish();
     }
 
     if ($action == 5) {
@@ -136,19 +139,23 @@ while ($action != 0) {
         my $size = <STDIN>;
         chomp $size;
 
-        my $prot_sup = $dbh->prepare("SELECT entry, names, length FROM proteins WHERE length >= ? ORDER BY length DESC;");
+        my $prot_sup = $dbh->prepare("
+        SELECT entry, names, sequence, length
+        FROM proteins
+        WHERE length >= ? ORDER BY length DESC;");
+
         $prot_sup->execute($size);
 
         show_results($prot_sup);
 
         my $answer = save_yes_no();
         if ($answer eq "O") {
-            $prot_sup->execute();
             my $name = "prot_sup_" . $size;
             my $title = "Protein of length greater than " . $size;
-            save($prot_sup, $name, $title, "Entry", "Protein names", "Protein Length");
-            print("Résultats sauvegardés\n")
+            save($prot_sup, $name, $title, "Entry", "Protein names", "Sequence", "Length");
         }
+        $prot_sup->finish();
+
     }
 
     if ($action == 6) {
@@ -166,10 +173,11 @@ while ($action != 0) {
         my $ec_car = $dbh->prepare("
         SELECT p.entry, m.entry_names, m.status ,p.names, p.sequence, p.length, r.transcript_id, r.plant_reaction
         FROM proteins p
-            JOIN reactions r ON p.entry = r.entry
             JOIN metadata m ON p.entry = m.entry
+            JOIN reactions r ON p.entry = r.entry
         WHERE p.names LIKE ?;");
 
+        # If True, may be because entry is not disponible in reaction table so we try
         if ($ec_car->execute($ec) == 0) {
             $ec_car = $dbh->prepare("
         SELECT p.entry, m.entry_names, m.status ,p.names, p.sequence, p.length
@@ -183,16 +191,17 @@ while ($action != 0) {
 
         my $answer = save_yes_no();
         if ($answer eq "O") {
-            $ec_car->execute();
             my $name = "carac_EC_" . $ec_id;
             my $title = "Characteristics of enzyme EC " . $ec_id;
             save($ec_car, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Sequence", "Protein Length", "Transcript ID", "Plant Reaction");
-            print("Résultats sauvegardés\n")
         }
+        $ec_car->finish();
     }
 
     menu;
     $action = <STDIN>;
 }
+
+$dbh->disconnect();
 
 

@@ -1,6 +1,6 @@
 table {
-  border-collapse: collapse;
-  width: 100%;
+    border-collapse: collapse;
+    width: 100%;
 }
 
 body {
@@ -8,13 +8,18 @@ body {
 }
 
 th, td {
-  text-align: left;
-  padding: 8px;
+    word-break: break-word;
+    text-align: center;
+    padding: 8px;
 }
 
-tr:nth-child(even){background-color: #f2f2f2}
+tr:nth-child(even) {
+    background-color: #f2f2f2
+}
 
 th {
-  background-color: #51a9af;
-  color: white;
+    background-color: #51a9af;
+    color: white;
+    min-width: 14ch;
+    word-break: unset;
 }
