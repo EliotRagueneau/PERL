@@ -37,6 +37,7 @@ sub save_yes_no {
 sub show_results {
     my $executed_querry = shift;
     while (my @t = $executed_querry->fetchrow_array()) {
+        for (@t) {$_ = 'N.A.' if !defined($_);}
         print join(" | ", @t), "\n"
     }
 }
