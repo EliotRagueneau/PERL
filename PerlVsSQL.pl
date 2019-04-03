@@ -1,11 +1,11 @@
 #!/usr/bin/perl
 use strict;
 use warnings FATAL => 'all';
-
+use Time::HiRes qw(time);
 print("Quelle est la longueur minimale des protéines que vous désirez afficher ?\n");
 my $min_len = <STDIN>;
 my %hash;
-
+my $start = time();
 open(my $file, "uniprot-arabidopsisthalianaSequence.tab") || die "can't open uniprot_data";
 <$file>;
 while (my $line = <$file>) {
@@ -38,3 +38,6 @@ close($file);
 for (values(%hash)) {
     print join(" | ", @$_), "\n\n";
 }
+my $duration = time() - $start;
+my $runtime = sprintf("%.4s", $duration);
+print "Execution time: $runtime s\n";

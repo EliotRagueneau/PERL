@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 use DBI;
+use Time::HiRes qw ( time );
 
 my $dbh = DBI->connect("DBI:Pg:dbname=eragueneau;host=dbserver", "eragueneau", "motdepasse", { RaiseError => 0 });
 
@@ -139,6 +140,7 @@ while ($action != 0) {
         print("Les protéines affichées doivent avoir une taille supérieure à : ");
         my $size = <STDIN>;
         chomp $size;
+        my $start = time();
 
         my $prot_sup = $dbh->prepare("
         SELECT DISTINCT m.entry, m.entry_names, m.status, p.names, p.length, g.names, g.ontology, g.synonyme, r.transcript_id, r.plant_reaction, p.sequence
@@ -151,12 +153,15 @@ while ($action != 0) {
         $prot_sup->execute($size);
 
         show_results($prot_sup);
+        my $duration = time() - $start;
+        my $runtime = sprintf("%.4s", $duration);
+        print "Execution time: $runtime s\n";
 
         my $answer = save_yes_no();
         if ($answer eq "O") {
             my $name = "prot_sup_" . $size;
             my $title = "Protein of length greater than " . $size;
-            save($prot_sup, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms","Transcript ID", "Plant Reaction", "Protein Sequence");
+            save($prot_sup, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms", "Transcript ID", "Plant Reaction", "Protein Sequence");
         }
         $prot_sup->finish();
 
@@ -190,7 +195,7 @@ while ($action != 0) {
         if ($answer eq "O") {
             my $name = "carac_EC_" . $ec_id;
             my $title = "Characteristics of enzyme EC " . $ec_id;
-            save($ec_car, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms","Transcript ID", "Plant Reaction", "Protein Sequence");
+            save($ec_car, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms", "Transcript ID", "Plant Reaction", "Protein Sequence");
         }
         $ec_car->finish();
     }
