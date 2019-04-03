@@ -26,7 +26,7 @@ $dbh->do("CREATE TABLE Reactions(
 $dbh->do("CREATE TABLE Genes(
     Entry VARCHAR(10) CONSTRAINT clef_genes PRIMARY KEY REFERENCES Proteins(Entry),
     Names VARCHAR(1000),
-    Ontology VARCHAR(10000) CONSTRAINT need_go_id CHECK(Ontology SIMILAR TO 'GO:\[0-9]+' OR NULL),
+    Ontology VARCHAR(10000) CONSTRAINT need_go_id CHECK(Ontology SIMILAR TO 'GO:[0-9]+' OR NULL),
     Synonyme VARCHAR(1000)
 );");
 
