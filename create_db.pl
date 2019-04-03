@@ -28,7 +28,6 @@ $dbh->do("CREATE TABLE Genes(
     Names VARCHAR(1000),
     Ontology VARCHAR(10000) CONSTRAINT need_go_id CHECK(Ontology SIMILAR TO 'GO:\[0-9]+' OR NULL),
     Synonyme VARCHAR(1000)
-
 );");
 
 $dbh->do("CREATE TABLE Metadata(

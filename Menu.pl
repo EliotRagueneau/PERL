@@ -140,9 +140,12 @@ while ($action != 0) {
         chomp $size;
 
         my $prot_sup = $dbh->prepare("
-        SELECT entry, names, sequence, length
-        FROM proteins
-        WHERE length >= ? ORDER BY length DESC;");
+        SELECT DISTINCT m.entry, m.entry_names, m.status, p.names, p.length, g.names, g.ontology, g.synonyme, r.transcript_id, r.plant_reaction, p.sequence
+        FROM proteins p
+            JOIN genes g ON p.entry = g.entry
+            JOIN metadata m ON p.entry = m.entry
+            LEFT OUTER JOIN reactions r on p.entry = r.entry
+        WHERE p.length > ?;");
 
         $prot_sup->execute($size);
 
@@ -152,7 +155,7 @@ while ($action != 0) {
         if ($answer eq "O") {
             my $name = "prot_sup_" . $size;
             my $title = "Protein of length greater than " . $size;
-            save($prot_sup, $name, $title, "Entry", "Protein names", "Sequence", "Length");
+            save($prot_sup, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms","Transcript ID", "Plant Reaction", "Protein Sequence");
         }
         $prot_sup->finish();
 
@@ -162,7 +165,7 @@ while ($action != 0) {
         print("Quel identifiant d'enzyme E.C. vous intéresse (format : x.x.x.x)?\n");
         my $ec_id = <STDIN>;
         chomp $ec_id;
-        while ($ec_id !~ /\d+\.\d+\.\d+\.\d+/) {
+        while ($ec_id !~ /\d\.\d{1,2}\.\d{1,2}\.\d{1,4}/) {
             print "Format ( x.x.x.x ) non respecté, veuillez réessayer \n";
             $ec_id = <STDIN>;
             chomp $ec_id;
@@ -171,21 +174,14 @@ while ($action != 0) {
         my $ec = "%EC " . $ec_id . "%";
 
         my $ec_car = $dbh->prepare("
-        SELECT p.entry, m.entry_names, m.status ,p.names, p.sequence, p.length, r.transcript_id, r.plant_reaction
+        SELECT DISTINCT m.entry, m.entry_names, m.status, p.names, p.length, g.names, g.ontology, g.synonyme, r.transcript_id, r.plant_reaction, p.sequence
         FROM proteins p
+            JOIN genes g ON p.entry = g.entry
             JOIN metadata m ON p.entry = m.entry
-            JOIN reactions r ON p.entry = r.entry
-        WHERE p.names LIKE ?;");
+            LEFT OUTER JOIN reactions r on p.entry = r.entry
+        WHERE p.names SIMILAR TO ?;");
 
-        # If True, may be because entry is not disponible in reaction table so we try
-        if ($ec_car->execute($ec) == 0) {
-            $ec_car = $dbh->prepare("
-        SELECT p.entry, m.entry_names, m.status ,p.names, p.sequence, p.length
-        FROM proteins p
-            JOIN metadata m ON p.entry = m.entry
-        WHERE p.names LIKE ?;");
-            $ec_car->execute($ec)
-        }
+        $ec_car->execute($ec);
 
         show_results($ec_car);
 
@@ -193,7 +189,7 @@ while ($action != 0) {
         if ($answer eq "O") {
             my $name = "carac_EC_" . $ec_id;
             my $title = "Characteristics of enzyme EC " . $ec_id;
-            save($ec_car, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Sequence", "Protein Length", "Transcript ID", "Plant Reaction");
+            save($ec_car, $name, $title, "Entry", "Entry name", "Status", "Protein names", "Protein Length", "Gene names", "Gene Ontology", "Gene Names synonyms","Transcript ID", "Plant Reaction", "Protein Sequence");
         }
         $ec_car->finish();
     }
